@@ -50,6 +50,6 @@ app.MapGet("/health", () =>
 
 // This app requires some time to get started. 
 // Maybe you should use a readiness-probe? 
-Thread.Sleep(3000);
+Thread.Sleep(10000);
 
 app.Run();
