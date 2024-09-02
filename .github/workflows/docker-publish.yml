@@ -48,7 +48,7 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-        
+
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -76,7 +76,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: "{{defaultContext}}:ressurser/simple-api"
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
