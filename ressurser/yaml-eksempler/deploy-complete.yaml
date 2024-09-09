@@ -5,6 +5,11 @@ metadata:
   labels:
     app: simple-api
   name: simple-api-deployment
+strategy:
+   type: RollingUpdate
+   rollingUpdate:
+     maxSurge: 1 # Max number (or %) of extra pods
+     maxUnavailable: 0 # Max number of missing pods
 spec:
   replicas: 3
   selector:
@@ -17,7 +22,7 @@ spec:
         app: simple-api
     spec:
       containers:
-      - image: "ghcr.io/varianter/k8s-101:v1.0.1"
+      - image: "ghcr.io/varianter/k8s-101:v1.1.1"
         name: api
         ports:
           - containerPort: 8080

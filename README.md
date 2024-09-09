@@ -204,13 +204,60 @@ kubectl scale --replicas 3 deployments/simple-api-deployment
 eller i yaml ved å endre på 'replicas' feltet og bruke `kubectl apply` som før.
 
 
+## 3.3 - Oppdater
+### 3.3.1 - Rull ut, rull tilbake
+Vi vil teste en ny version. Endre .yaml-filen til å bruke version `v1.1.1-beta` og bruk `kubectl apply` som før. 
 
+Se hva som skjer. 
 
- - Sette på readiness- og livenessProbes
- - Oppdater til neste versjon. Denne krever tilkobling til DB og failer derfor
-	 - Her kan man eventuelt velge å bruke en strategi som canary eller blue/green
- - Rull tilbake. 
- - Gå til neste seksjon -> lage en database
-## 2.2 Slides om åssen deployments endres, replicasets osv 
+Det funket jo dårlig. 
+Du kan liste releasene du har hatt ved
+```
+kubectl rollout history deployment simple-api-deployment
+```
 
-# Pause 
+Og rulle tilbake ved (bruk pil opp og endre history -> undo):
+```
+kubectl rollout history deployment simple-api-deployment
+```
+
+### 3.3.2 - Rolling release 
+Vi skal fra v1.0.0 til v1.1.0 og vil bare gjøre det fort og gæli. 
+
+Legg til denne seksjonen i yaml-filen din, på 'rotnivå'
+```
+strategy:
+   type: RollingUpdate
+   rollingUpdate:
+     maxSurge: 1 # Antall (eller %) ekstra poder
+     maxUnavailable: 0 # Antall (eller %) manglende poder
+```
+
+Du kan bytte frem og tilbake mellom `v1.0.0` og `v1.1.0` om du vil teste litt ulike konfigurasjoner av maxSurge og maxUnavailable
+
+### 3.3.3 - Canary release eller Blue/Green release (Hvis vi rekker)
+Vi skal helt til `v2.0.0` som er en ny stor release. 
+Her kan vi velge mellom to andre strategier: Canary eller Blue/Green. 
+
+Canary går ut på å gi en brøkdel av brukere den nye versionen, og gradvis la den ta over. 
+Blue/Green går ut på å gjøre klar v2 i bakgrunnen, også brått endre _servicen_ til å heller rute til den nye versionen. 
+
+Disse kan gjøres automatisk, men vi skal gjøre dem manuelt nå. 
+
+**Canary:**
+Lag en ny deployment ved å kopiere den gamle. 
+Gi _deploymenten_ et nytt navn, men _bruk samme labels på containeren_
+
+For å få f eks 25% av den nye versjonen, kjør den nye deploymenten med 1 replica og den gamle med 3. 
+
+Bruk swagger et par ganger og se hvor ofte du får en ny type på /info. 
+
+Skaler den nye opp og slett den gamle når du føler deg trygg på v2
+
+**Blue/Green**
+Lag en ny deployment ved å kopiere den gamle. 
+Bruk nye navn og labels på alt. 
+
+Deploy og spinn opp. Bruk eventuelt en debug-container som i steg 1 for å teste først. 
+
+Deretter, endre servicen til å heller bruke labels som stemmer med de nye containerne.

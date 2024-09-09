@@ -23,6 +23,7 @@ app.MapGet("/info", () =>
             return new
             {
                 newField = "Some new field",
+                majorNewField = "Nope I'm a captain",
                 favoriteLunch,
                 machineName
             };
@@ -48,9 +49,5 @@ app.MapGet("/health", () =>
     })
 .WithName("Health")
 .WithOpenApi();
-
-// This app requires some time to get started. 
-// Maybe you should use a readiness-probe? 
-Thread.Sleep(3000);
 
 app.Run();
