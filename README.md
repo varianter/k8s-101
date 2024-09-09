@@ -4,7 +4,9 @@
 Sørg for å ha følgende installert: 
  - Docker, containerd, eller podman: `brew install docker`
  - kubectl `brew install kubectl`
- - minikube `brew install minikube`
+	 - [Eller finn instrukser for Windows og Linux her](https://minikube.sigs.k8s.io/docs/start/?arch=/linux/x86-64/stable/binary+download)
+ - minikube `brew install minikube` 
+	 - [Eller finn instrukser for Windows og Linux her](https://minikube.sigs.k8s.io/docs/start/?arch=/linux/x86-64/stable/binary+download)
 
 Start clusteret:
 ```
@@ -144,7 +146,66 @@ Voila!
 # Pause
 
 # Del 3: Mer robusthet, Oppdateringer
-## 2.1 Gjøre ting 
+## 3.1 - Recap og test
+Hittil har vi laget en deployment med én pod, og bruk service og ingress til å gjøre denne synlig på `api.local`
+
+Vi har funnet swagger på `http://api.local/swagger`
+
+Nå må vi følge litt med på hva som skjer. 
+**I en ny terminal**, kjør følgende:
+```
+watch -n 0.5 kubectl get pod -o wide
+```
+
+Denne vil kjøre `kubectl get pod -o wide` hvert halve sekund, så du får en live-ish oppdatering av hva som skjer. 
+
+Har du ikke gjort det enda, så er det på tide å teste `/experimental` - endepunktet. Åpne swagger og kjør den. Go ahead. Se hva som skjer når du tester i prod. 
+
+## 3.2 - Liveness og readinessProbes
+Ups.. Nå funker ikke APIet, men kubernetes tror det funker fordi appen ikke har krasjet. 
+For å be kubernetes om å følge med litt, la oss sette opp **liveness og readinessProbes**
+
+Legg til følgende seksjoner i yaml-filen til deploymentet ditt, som en del av container-oppsettet:
+```
+        livenessProbe:
+          httpGet:
+            path: #F eks /health eller noe sånt
+            port: 8080
+          periodSeconds: #Sekunder mellom hver test
+          initialDelaySeconds: #Hvor lenge den venter før første test. Utviklerne sa noe om 'Make It Work, Make It Beautiful, Make It Fast'... Ville gitt den _minst_ 10 sekunder for å si det sånn
+        readinessProbe:
+        # Samme innhold som over
+```
+
+Bruk endringene via:
+```
+kubectl apply -f <yaml-fil>
+```
+
+Merk at den nå plutselig tar ned poden og setter på en ny en. 
+
+Prøv å spam /info etter du har brukt /experimental, og se hvordan ting utartert seg. 
+
+### Bonus: startupProbe
+Kanskje utviklerne faktisk rekker å 'Make It Fast' før produkteieren vil ha nye nytt ut innen i morgen. 
+I stedet for en laaaang, konstant initialDelay, prøv å kopier 'livenessProbe'-en og kall den `startupProbe`. 
+
+Kanskje ting går fortere neste gang vi oppdaterer?
+
+## 3.2 - Skaler
+Vi trenger visst enda mer robusthet. 
+
+Skaler appen din enten via kommandolinja, eller yaml:
+Kommando: 
+```
+kubectl scale --replicas 3 deployments/simple-api-deployment 
+```
+
+eller i yaml ved å endre på 'replicas' feltet og bruke `kubectl apply` som før.
+
+
+
+
  - Sette på readiness- og livenessProbes
  - Oppdater til neste versjon. Denne krever tilkobling til DB og failer derfor
 	 - Her kan man eventuelt velge å bruke en strategi som canary eller blue/green

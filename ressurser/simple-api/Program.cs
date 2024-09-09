@@ -22,6 +22,7 @@ app.MapGet("/info", () =>
         if (isHealthy)
             return new
             {
+                newField = "Some new field",
                 favoriteLunch,
                 machineName
             };
@@ -50,6 +51,6 @@ app.MapGet("/health", () =>
 
 // This app requires some time to get started. 
 // Maybe you should use a readiness-probe? 
-Thread.Sleep(10000);
+Thread.Sleep(3000);
 
 app.Run();
