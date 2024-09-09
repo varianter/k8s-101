@@ -17,7 +17,7 @@ spec:
         app: simple-api
     spec:
       containers:
-      - image: "ghcr.io/varianter/k8s-101:v1.0.1"
+      - image: "ghcr.io/varianter/k8s-101:v1.1.0"
         name: api
         ports:
           - containerPort: 8080
@@ -26,12 +26,19 @@ spec:
             path: /health
             port: 8080
           periodSeconds: 3
-          initialDelaySeconds: 12
+          initialDelaySeconds: 3
         readinessProbe:
           httpGet:
             path: /health
             port: 8080
           periodSeconds: 1
-          initialDelaySeconds: 5
+          initialDelaySeconds: 2
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          periodSeconds: 3
+          initialDelaySeconds: 3
+          failureThreshold: 30
         resources: {}
 status: {}

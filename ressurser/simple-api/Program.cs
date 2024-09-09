@@ -53,4 +53,6 @@ app.MapGet("/health", () =>
 // Maybe you should use a readiness-probe? 
 Thread.Sleep(3000);
 
-app.Run();
+throw new Exception("OH NO I CRASHED");
+
+// app.Run();
