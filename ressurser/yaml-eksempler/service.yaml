@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-service
+spec:
+  selector:
+    app: simple-api
+  ports:
+  # Default port used by the image
+  - port: 8080
+    targetPort: 8080

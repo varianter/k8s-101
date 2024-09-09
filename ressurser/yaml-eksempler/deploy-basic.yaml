@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: simple-api
+  name: simple-api-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple-api
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: simple-api
+    spec:
+      containers:
+      - image: "ghcr.io/varianter/k8s-101:v1.0.1"
+        name: api
+        ports:
+          - containerPort: 8080
+        resources: {}
+status: {}
