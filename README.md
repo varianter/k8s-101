@@ -32,9 +32,20 @@ watch -n 0.5 kubectl get pod,deploy,svc
 Denne vil kjøre kommandoen hvert 0.5 sekund, så du ser når ting skjer i clusteret.
 
 
-Så kan vi spinne opp helt enkelt API i én pod: 
+I en editor, lag en yaml-fil som ser cirka sånn ut: 
 ```
-kubectl run --image ghcr.io/varianter/k8s-101:v1.0.1 myapi
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: simple-api
+  name: myapi 
+spec:
+  containers:
+  - image: ghcr.io/varianter/k8s-101:v1.0.1
+    name: myapi 
+    ports:
+      - containerPort: 8080
 ```
 
 Voila! Da kjører apiet fint. Men - det kan fortsatt bare nås av andre pods i clusteret. 
@@ -72,11 +83,6 @@ kubectl delete pod myapi tmp
 ```
 
 
-## 1.4 - Slides om hva vi nettopp gjorde
- Forklar: 
-  - Nodes, Control Plane 
-  - Deployment, pods 
-  - Services 
   
 ## 2 - Deployments
 ## 2.1 - Lag en basic deployment
@@ -143,7 +149,6 @@ Denne legger til en linje i `/etc/hosts`, som gjør at maskina di bruker IPen ti
 Gå til nettleseren din, og åpne `api.local/swagger` 
 Voila! 
 
-# Pause
 
 # Del 3: Mer robusthet, Oppdateringer
 ## 3.1 - Recap og test
@@ -152,7 +157,7 @@ Hittil har vi laget en deployment med én pod, og bruk service og ingress til å
 Vi har funnet swagger på `http://api.local/swagger`
 
 Nå må vi følge litt med på hva som skjer. 
-**I en ny terminal**, kjør følgende:
+**I en ny terminal**, kjør følgende om du ikke har gjort det enda:
 ```
 watch -n 0.5 kubectl get pod -o wide
 ```
