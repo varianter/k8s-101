@@ -266,3 +266,6 @@ Bruk nye navn og labels på alt.
 Deploy og spinn opp. Bruk eventuelt en debug-container som i steg 1 for å teste først. 
 
 Deretter, endre servicen til å heller bruke labels som stemmer med de nye containerne.
+
+# 4 - Avslutning
+**[Gjerne kom med tilbakemeldinger her](https://forms.office.com/e/aWF2zj9rVn)**
