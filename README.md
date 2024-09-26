@@ -33,7 +33,7 @@ Denne vil kjøre kommandoen hvert 0.5 sekund, så du ser når ting skjer i clust
 
 
 I en editor, lag en yaml-fil som ser cirka sånn ut: 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -171,7 +171,7 @@ Ups.. Nå funker ikke APIet, men kubernetes tror det funker fordi appen ikke har
 For å be kubernetes om å følge med litt, la oss sette opp **liveness og readinessProbes**
 
 Legg til følgende seksjoner i yaml-filen til deploymentet ditt, som en del av container-oppsettet:
-```
+```yaml
         livenessProbe:
           httpGet:
             path: #F eks /health eller noe sånt
@@ -230,7 +230,7 @@ kubectl rollout history deployment simple-api-deployment
 Vi skal fra v1.0.0 til v1.1.0 og vil bare gjøre det fort og gæli. 
 
 Legg til denne seksjonen i yaml-filen din, på 'rotnivå'
-```
+```yaml
 strategy:
    type: RollingUpdate
    rollingUpdate:
