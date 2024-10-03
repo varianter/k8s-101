@@ -1,18 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
-  labels:
-    app: simple-api
-  name: simple-api-deployment
+  name: api-deploy
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: simple-api
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: simple-api
     spec:

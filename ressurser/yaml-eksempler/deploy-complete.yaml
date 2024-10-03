@@ -2,9 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   creationTimestamp: null
-  labels:
-    app: simple-api
-  name: simple-api-deployment
+  name: api-deploy
 strategy:
    type: RollingUpdate
    rollingUpdate:

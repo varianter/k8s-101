@@ -39,7 +39,7 @@ kind: Pod
 metadata:
   labels:
     app: simple-api
-  name: myapi 
+  name: mypod 
 spec:
   containers:
   - image: ghcr.io/varianter/k8s-101:v1.0.1
@@ -92,20 +92,16 @@ Lag en .yaml-fil med følgende innhold (se `ressurser/yaml-eksempler/deploy-basi
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
-  labels:
-    app: simple-api
-  name: simple-api-deployment
+  name: #Gi deploymenten et navn
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: simple-api
+      #La denne matche labelen til poden du spesifiserer under
   template:
     metadata:
-      creationTimestamp: null
       labels:
-        app: simple-api
+        # En label vi kan bruke til å velge poder. F eks app: simple-api
     spec:
       containers:
       - image: "ghcr.io/varianter/k8s-101:v1.0.1"
@@ -125,9 +121,19 @@ kubectl create -f deploy-basic.yaml
 Her skal vi gjøre at domenet `api.local` kan brukes til å nå APIet vårt. 
 Da må vi først lage en service som tar hånd om å velge pods. Deretter lager vi en ingress-regel for å knytte innkommende trafikk til servicen. Til slutt registrerer vi domenet lokalt. 
 ### 2.2.1 - Lag en Service
-Så må vi få eksponert appen utad også
-```
-kubectl create -f service.yaml
+Så må vi få eksponert appen utad også. Bruk denne som en mal, lag en yaml-fil og apply den via `kubectl apply -f fila/di` 
+```yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-service
+spec:
+  selector:
+    # Labels som matcher PODene du vil bruke
+  ports:
+  # Default port used by the image
+  - port: 8080
+    targetPort: 8080
 ```
 
 ### 2.2.2 - Sett opp ingress
