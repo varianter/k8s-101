@@ -145,12 +145,40 @@ Denne knytter domenet 'api.local' til servicen vi lagde i forrige steg.
 
 ### 2.2.3 - Registrere domenet
 Hos kunde bruker du en leverandør til å sette opp ekte domener. Her skal vi kun jobbe _lokalt_, så vi bruker heller en liten juksekode:
+Om du lurer på hvordan clusteret ditt kjører, bruk `docker ps` og se etter en container kalt minikube.
+
+**FOR DOCKER**
+Om ditt minikube-cluster kjører i docker, gjør følgende steg:
+ - I en ny terminal, kjør `minikube tunnel` 
+ - Kjør `sudo sh -c "echo '127.0.0.1 api.local' >> /etc/hosts"`
+
+**For qemu/VM-baserte minikube-cluster**
 ```
 sudo sh -c "echo '$(minikube ip) api.local' >> /etc/hosts"
 ```
 
 Denne legger til en linje i `/etc/hosts`, som gjør at maskina di bruker IPen til clusteret når du skriver `api.local` i nettleseren.
 
+**ÆSJ, dette med domene var vanskelig. Arghh!** 
+Hvis dette er deg - så har vi en plan b:
+
+Endre servicen din til å være en nodeport:
+```yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-service
+spec:
+  type: NodePort
+  # ...
+ ```
+
+ Deretter, kjør
+ ```
+ minikube service api-service --url
+ ```
+
+ Du kan nå bruke IP-addressen og finne apiet på `<IP fra minikube service api-service --url>:8080/swagger`
 ### 2.2.4 - Test
 Gå til nettleseren din, og åpne `api.local/swagger` 
 Voila! 
