@@ -48,6 +48,11 @@ spec:
       - containerPort: 8080
 ```
 
+Hvis du kaller den f. eks. `api.yaml`, så kan du kjøre følgende kommando for å starte den i clusteret:
+```bash
+kubectl apply -f ./api.yaml
+```
+
 Voila! Da kjører apiet fint. Men - det kan fortsatt bare nås av andre pods i clusteret. 
 
 ## 1.2 - Si Hei
