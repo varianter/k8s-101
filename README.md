@@ -84,7 +84,7 @@ Uuups.. Kanskje vi burde hatt mer robusthet her?
 Vi kan sikkert bare ta ned APIet, der var vel ingen brukere uansett. Slett unna debug-poden tmp også. 
 
 ```
-kubectl delete pod myapi tmp
+kubectl delete pod mypod tmp
 ```
 
 
