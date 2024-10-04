@@ -7,16 +7,19 @@ Sørg for å ha følgende installert:
 	 - [Eller finn instrukser for Windows og Linux her](https://minikube.sigs.k8s.io/docs/start/?arch=/linux/x86-64/stable/binary+download)
  - minikube `brew install minikube` 
 	 - [Eller finn instrukser for Windows og Linux her](https://minikube.sigs.k8s.io/docs/start/?arch=/linux/x86-64/stable/binary+download)
+ - watch (valgfri), `brew install watch`
 
 Start clusteret:
-```
+```bash
 minikube start --addons ingress
 ```
 
 Og test tilkoblingen:
-```
+```bash
 kubectl get pod
 ```
+
+Du skal få svaret `No resources in default namespace`
 
 # Del 1: Hallo verden
 ## 1.1 - Deploy et enkelt API
@@ -63,27 +66,27 @@ kubectl get pod -o wide
 
 Merk deg IP-addressen. Dette er IPen _inne i clusteret_, som betyr at andre pods kan nå den på den IPen. Vi derimot, kan ikke nå den. 
 Derfor skal vi først pinge den fra inni clusteret: 
-```
+```bash
 kubectl run --image nginx tmp #Start en pod vi kan kjøre curl fra 
-kubectl exec -it tmp -- curl <IP>/info #Ping
+kubectl exec -it tmp -- curl <IP>:8080/info #Ping
 ```
 
 ### 1.2.1 - Test eksperimentelt endepunkt
 Vi har også en nytt, _eksperimentelt_ endepunkt, `/experimental`
 Kall det via: (Bruk pil opp og endre forrige kommando)
-```
-kubectl exec -it tmp -- curl <IP>/experimental
+```bash
+kubectl exec -it tmp -- curl <IP>:8080/experimental
 ```
 Og sjekk igjen at `/info` virker:
-```
-kubectl exec -it tmp -- curl <IP>/info
+```bash
+kubectl exec -it tmp -- curl <IP>:8080/info
 ```
 
 Uuups.. Kanskje vi burde hatt mer robusthet her?
 ## 1.3 - Rydde opp
 Vi kan sikkert bare ta ned APIet, der var vel ingen brukere uansett. Slett unna debug-poden tmp også. 
 
-```
+```bash
 kubectl delete pod mypod tmp
 ```
 
@@ -117,9 +120,9 @@ spec:
 status: {}
 ```
 
-Når du har lagret, spinn det opp via: (NB! Bruk rett filnavn ift. plassering osv. Bruk tabs for å fullføre filnavnet)
-```
-kubectl create -f deploy-basic.yaml
+Når du har lagret, spinn det opp via: (NB! Bruk rett filnavn ift. plassering osv. Bruk tabs for å fullføre filnavnet). 
+```bash
+kubectl apply -f deploy-basic.yaml
 ```
 
 ## 2.2 - Expose APIet utad
@@ -134,7 +137,7 @@ metadata:
   name: api-service
 spec:
   selector:
-    # Labels som matcher PODene du vil bruke
+    # Labels som matcher PODene du vil bruke. F eks app: simple-api
   ports:
   # Default port used by the image
   - port: 8080
@@ -143,7 +146,7 @@ spec:
 
 ### 2.2.2 - Sett opp ingress
 Først - sett opp en ingress-tjeneste. Vi skal ikke i stor detalj her, så vi har en ferdig-kokt yaml:
-```
+```bash
 kubectl create -f ingress.yaml
 ```
 Denne knytter domenet 'api.local' til servicen vi lagde i forrige steg.
@@ -158,7 +161,7 @@ Om ditt minikube-cluster kjører i docker, gjør følgende steg:
  - Kjør `sudo sh -c "echo '127.0.0.1 api.local' >> /etc/hosts"`
 
 **For qemu/VM-baserte minikube-cluster**
-```
+```bash
 sudo sh -c "echo '$(minikube ip) api.local' >> /etc/hosts"
 ```
 
@@ -197,7 +200,7 @@ Vi har funnet swagger på `http://api.local/swagger`
 
 Nå må vi følge litt med på hva som skjer. 
 **I en ny terminal**, kjør følgende om du ikke har gjort det enda:
-```
+```bash
 watch -n 0.5 kubectl get pod -o wide
 ```
 
@@ -241,7 +244,7 @@ Vi trenger visst enda mer robusthet.
 
 Skaler appen din enten via kommandolinja, eller yaml:
 Kommando: 
-```
+```bash
 kubectl scale --replicas 3 deployments/simple-api-deployment 
 ```
 
@@ -256,12 +259,12 @@ Se hva som skjer.
 
 Det funket jo dårlig. 
 Du kan liste releasene du har hatt ved
-```
+```bash
 kubectl rollout history deployment simple-api-deployment
 ```
 
 Og rulle tilbake ved (bruk pil opp og endre history -> undo):
-```
+```bash
 kubectl rollout history deployment simple-api-deployment
 ```
 
@@ -326,4 +329,3 @@ sudo vim /etc/hosts
  - Scroll ned til linja med api.local
  - skriv `dd` for å slette linja
  - `:wq` for å lukke vim 
- 
