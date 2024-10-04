@@ -308,3 +308,22 @@ Deretter, endre servicen til å heller bruke labels som stemmer med de nye conta
 
 # 4 - Avslutning
 **[Gjerne kom med tilbakemeldinger her](https://forms.office.com/e/aWF2zj9rVn)**
+
+## Opprydning
+For å stoppe clusteret, bruk 
+```bash
+minikube stop
+```
+Og for å slette alt, bruk 
+```bash
+minikube delete
+```
+
+Dersom du endret `/etc/hosts/` for å kunne bruke api.local, endre denne ved
+```bash
+sudo vim /etc/hosts
+```
+ - Scroll ned til linja med api.local
+ - skriv `dd` for å slette linja
+ - `:wq` for å lukke vim 
+ 
