@@ -64,25 +64,13 @@ Først - la oss få litt mer info om poden:
 kubectl get pod -o wide
 ```
 
-Merk deg IP-addressen. Dette er IPen _inne i clusteret_, som betyr at andre pods kan nå den på den IPen. Vi derimot, kan ikke nå den. 
+Merk deg IP-addressen til api-poden. Dette er IPen _inne i clusteret_, som betyr at andre pods kan nå den på den IPen. Vi derimot, kan ikke nå den. 
 Derfor skal vi først pinge den fra inni clusteret: 
 ```bash
 kubectl run --image nginx tmp #Start en pod vi kan kjøre curl fra 
-kubectl exec -it tmp -- curl <IP>:8080/info #Ping
+kubectl exec -it tmp -- curl <IP til apiet>:8080/info #Ping
 ```
 
-### 1.2.1 - Test eksperimentelt endepunkt
-Vi har også en nytt, _eksperimentelt_ endepunkt, `/experimental`
-Kall det via: (Bruk pil opp og endre forrige kommando)
-```bash
-kubectl exec -it tmp -- curl <IP>:8080/experimental
-```
-Og sjekk igjen at `/info` virker:
-```bash
-kubectl exec -it tmp -- curl <IP>:8080/info
-```
-
-Uuups.. Kanskje vi burde hatt mer robusthet her?
 ## 1.3 - Rydde opp
 Vi kan sikkert bare ta ned APIet, der var vel ingen brukere uansett. Slett unna debug-poden tmp også. 
 
@@ -90,11 +78,9 @@ Vi kan sikkert bare ta ned APIet, der var vel ingen brukere uansett. Slett unna 
 kubectl delete pod mypod tmp
 ```
 
-
   
 ## 2 - Deployments
 ## 2.1 - Lag en basic deployment
-Før vi går i produksjon, trenger vi åpenbart litt mer robusthet. 
 Lag en .yaml-fil med følgende innhold (se `ressurser/yaml-eksempler/deploy-basic.yaml`):
 ```yaml
 apiVersion: apps/v1
@@ -105,11 +91,11 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      #La denne matche labelen til poden du spesifiserer under
+      #La denne matche labelen til poden du spesifiserer under.
   template:
     metadata:
       labels:
-        # En label vi kan bruke til å velge poder. F eks app: simple-api
+        # En label vi kan bruke til å velge poder. F eks `app: simple-api`
     spec:
       containers:
       - image: "ghcr.io/varianter/k8s-101:v1.0.1"
@@ -128,6 +114,7 @@ kubectl apply -f deploy-basic.yaml
 ## 2.2 - Expose APIet utad
 Her skal vi gjøre at domenet `api.local` kan brukes til å nå APIet vårt. 
 Da må vi først lage en service som tar hånd om å velge pods. Deretter lager vi en ingress-regel for å knytte innkommende trafikk til servicen. Til slutt registrerer vi domenet lokalt. 
+
 ### 2.2.1 - Lag en Service
 Så må vi få eksponert appen utad også. Bruk denne som en mal, lag en yaml-fil og apply den via `kubectl apply -f fila/di` 
 ```yaml
@@ -139,13 +126,12 @@ spec:
   selector:
     # Labels som matcher PODene du vil bruke. F eks app: simple-api
   ports:
-  # Default port used by the image
-  - port: 8080
+  - port: 80
     targetPort: 8080
 ```
 
 ### 2.2.2 - Sett opp ingress
-Først - sett opp en ingress-tjeneste. Vi skal ikke i stor detalj her, så vi har en ferdig-kokt yaml:
+Først - sett opp en ingress-tjeneste. Vi skal ikke i stor detalj her, så vi har en ferdig-kokt yaml under ressurser/yaml-eksempler:
 ```bash
 kubectl create -f ingress.yaml
 ```
@@ -182,14 +168,13 @@ spec:
  ```
 
  Deretter, kjør
- ```
+ ```bash
  minikube service api-service --url
  ```
 
- Du kan nå bruke IP-addressen og finne apiet på `<IP fra minikube service api-service --url>:8080/swagger`
+ Du kan nå bruke IP-addressen og finne apiet på `<IP fra minikube service api-service --url>/swagger`
 ### 2.2.4 - Test
-Gå til nettleseren din, og åpne `api.local/swagger` 
-Voila! 
+Gå til nettleseren din, og åpne `api.local/swagger`, eller `<IP fra minikube service api-service --url>/swagger` avhengig av forrige steg. 
 
 
 # Del 3: Mer robusthet, Oppdateringer
@@ -242,34 +227,42 @@ Kanskje ting går fortere neste gang vi oppdaterer?
 ## 3.2 - Skaler
 Vi trenger visst enda mer robusthet. 
 
-Skaler appen din enten via kommandolinja, eller yaml:
-Kommando: 
+Først - finn navnet på deploymenten din via 
 ```bash
-kubectl scale --replicas 3 deployments/simple-api-deployment 
+kubectl get deploy
 ```
+
+Skaler appen din enten via kommandolinja, eller yaml:
+Kommando (Prøv gjerne tab for autocomplete. Det funker hos noen): 
+```bash
+kubectl scale --replicas 3 deploy <navn på ditt deployment>
+```
+
+Observer i `kubectl get pod` at du nå har en ekstra. 
 
 eller i yaml ved å endre på 'replicas' feltet og bruke `kubectl apply` som før.
 
 
 ## 3.3 - Oppdater
 ### 3.3.1 - Rull ut, rull tilbake
-Vi vil teste en ny version. Endre .yaml-filen til å bruke version `v1.1.1-beta` og bruk `kubectl apply` som før. 
+Vi vil teste en ny version. Endre .yaml-filen til å bruke version `v1.1.1-beta` og bruk `kubectl apply` som før. Alternativt kan du bruke `kubectl edit deployment ...` og endre image (krever enkel kjennskap til vim) 
 
-Se hva som skjer. 
+Se hva som skjer. Merk at beta kaaanskje ikke funker. Er du nysgjerrig på hvorfor, kan de se i [program.cs](./ressurser/simple-api/Program.cs) i branchen `beta`. Uansett - vi får jo håpe at kubernets har en nøktern løsning hvis noe nekter å starte. 
 
 Det funket jo dårlig. 
 Du kan liste releasene du har hatt ved
 ```bash
-kubectl rollout history deployment simple-api-deployment
+kubectl rollout history deployment (navn på deployment)
 ```
+
 
 Og rulle tilbake ved (bruk pil opp og endre history -> undo):
 ```bash
-kubectl rollout history deployment simple-api-deployment
+kubectl rollout history deployment (navn på deployment)
 ```
 
 ### 3.3.2 - Rolling release 
-Vi skal fra v1.0.0 til v1.1.0 og vil bare gjøre det fort og gæli. 
+Vi skal fra v1.0.1 til v1.1.0 og vil bare gjøre det fort og gæli. 
 
 Legg til denne seksjonen i yaml-filen din, på 'rotnivå'
 ```yaml
